@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Dump disk partition info
 #AutoIt3Wrapper_Res_Description=Dump disk partition info
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.0
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.1
 #AutoIt3Wrapper_Res_LegalCopyright=Joakim Schicht
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -18,17 +18,17 @@ Global $TargetImageFile, $Entries, $IsShadowCopy=False, $IsPhysicalDrive=False, 
 Global $VolumesArray[1][3]
 
 $VolumesArray[0][0] = "Type"
-$VolumesArray[0][1] = "ByteOffset"
+$VolumesArray[0][1] = "SectorOffset"
 $VolumesArray[0][2] = "Sectors"
 
-ConsoleWrite("PartDump v1.0.0.0" & @CRLF & @CRLF)
+ConsoleWrite("PartDump v1.0.0.1" & @CRLF & @CRLF)
 
 _GetInputParams()
 ;_ArrayDisplay($VolumesArray,"$VolumesArray")
 
 If $WritePartInfo Then
 	$hFile = FileOpen($OutPutPath & "\DiskInfo.txt",2)
-	FileWriteLine($hFile,"Type,ByteOffset,Sectors")
+	FileWriteLine($hFile,"No,Type,ByteOffset,Sectors")
 EndIf
 
 $HighestVal0 = UBound($VolumesArray)
@@ -49,8 +49,8 @@ If @error then
 	ConsoleWrite("Error: Unexpected error when resolving higest value in array: " & @error & @CRLF)
 	Exit
 EndIf
-$ByteOffsetStr = $VolumesArray[0][1];"ByteOffset"
-If StringLen($ByteOffsetStr) < $HighestVal2 Then $ByteOffsetStr = _AlignString($ByteOffsetStr,$HighestVal2+2,1)
+$SectorOffsetStr = $VolumesArray[0][1];"SectorOffset"
+If StringLen($SectorOffsetStr) < $HighestVal2 Then $SectorOffsetStr = _AlignString($SectorOffsetStr,$HighestVal2+2,1)
 
 $HighestVal3 = _ArrayMax2($VolumesArray,2)
 If @error then
@@ -60,7 +60,7 @@ EndIf
 $SectorsStr = $VolumesArray[0][2];"Sectors"
 If StringLen($SectorsStr) < $HighestVal3 Then $SectorsStr = _AlignString($SectorsStr,$HighestVal3+2,1)
 
-ConsoleWrite($NoStr & "|" & $TypeStr & "|" & $ByteOffsetStr & "|" & $SectorsStr & @CRLF)
+ConsoleWrite($NoStr & "|" & $TypeStr & "|" & $SectorOffsetStr & "|" & $SectorsStr & @CRLF)
 For $i = 1 To UBound($VolumesArray)-1
 	;ConsoleWrite($VolumesArray[$i][0]&","&$VolumesArray[$i][1]&","&$VolumesArray[$i][2] & @CRLF)
 	$AlignedSizeVal0 = _AlignString($i,$HighestVal0,1)
@@ -70,7 +70,7 @@ For $i = 1 To UBound($VolumesArray)-1
 	$TextOut = $AlignedSizeVal0 & " | " & $AlignedSizeVal1 & " | " & $AlignedSizeVal2 & " | " & $AlignedSizeVal3
 	ConsoleWrite($TextOut & @CRLF)
 	If $WritePartInfo Then
-		FileWriteLine($hFile,$VolumesArray[$i][0]&","&$VolumesArray[$i][1]&","&$VolumesArray[$i][2])
+		FileWriteLine($hFile,$i&","&$VolumesArray[$i][0]&","&$VolumesArray[$i][1]&","&$VolumesArray[$i][2])
 	EndIf
 Next
 If $WritePartInfo Then
@@ -262,7 +262,7 @@ Func _CheckMBR()
 			If Not _TestNTFS($hImage, $StartingSector) Then
 				ReDim $VolumesArray[UBound($VolumesArray)+1][3]
 				$VolumesArray[UBound($VolumesArray)-1][0] = "Non-NTFS"
-				$VolumesArray[UBound($VolumesArray)-1][1] = $StartingSector*512
+				$VolumesArray[UBound($VolumesArray)-1][1] = $StartingSector
 				$VolumesArray[UBound($VolumesArray)-1][2] = $NumberOfSectors
 				ContinueLoop
 			Else
@@ -313,7 +313,7 @@ Func _CheckGPT($hImage) ; Assume GPT to be present at sector 1, which is not foo
 		If Not _TestNTFS($hImage, $FirstLBA) Then
 			ReDim $VolumesArray[UBound($VolumesArray)+1][3]
 			$VolumesArray[UBound($VolumesArray)-1][0] = "Non-NTFS"
-			$VolumesArray[UBound($VolumesArray)-1][1] = $FirstLBA*512
+			$VolumesArray[UBound($VolumesArray)-1][1] = $FirstLBA
 			$VolumesArray[UBound($VolumesArray)-1][2] = $LastLBA-$FirstLBA
 			ContinueLoop
 		Else
@@ -339,7 +339,7 @@ Func _CheckExtendedPartition($StartSector, $hImage)	;Extended partitions can onl
 			If Not _TestNTFS($hImage, $StartingSector) Then
 				ReDim $VolumesArray[UBound($VolumesArray)+1][3]
 				$VolumesArray[UBound($VolumesArray)-1][0] = "Non-NTFS"
-				$VolumesArray[UBound($VolumesArray)-1][1] = $StartingSector*512
+				$VolumesArray[UBound($VolumesArray)-1][1] = $StartingSector
 				$VolumesArray[UBound($VolumesArray)-1][2] = $NumberOfSectors
 			Else
 				$Entries &= _GenComboDescription($StartingSector,$NumberOfSectors)
@@ -347,7 +347,7 @@ Func _CheckExtendedPartition($StartSector, $hImage)	;Extended partitions can onl
 		ElseIf $FilesystemDescriptor <> "05" And $FilesystemDescriptor <> "0F" Then
 			ReDim $VolumesArray[UBound($VolumesArray)+1][3]
 			$VolumesArray[UBound($VolumesArray)-1][0] = "Non-NTFS"
-			$VolumesArray[UBound($VolumesArray)-1][1] = $StartingSector*512
+			$VolumesArray[UBound($VolumesArray)-1][1] = $StartingSector
 			$VolumesArray[UBound($VolumesArray)-1][2] = $NumberOfSectors
 		EndIf
 		If StringMid($PartitionTable,33) = "00000000000000000000000000000000" Then ExitLoop ; No more entries
@@ -372,7 +372,7 @@ Func _TestNTFS($hImage, $PartitionStartSector)
 	If $TestSig = "4E544653" Then
 		ReDim $VolumesArray[UBound($VolumesArray)+1][3]
 		$VolumesArray[UBound($VolumesArray)-1][0] = "NTFS"
-		$VolumesArray[UBound($VolumesArray)-1][1] = $PartitionStartSector*512
+		$VolumesArray[UBound($VolumesArray)-1][1] = $PartitionStartSector
 		$VolumesArray[UBound($VolumesArray)-1][2] = $TotalSectors
 		Return $TotalSectors		; Volume is NTFS
 	EndIf
