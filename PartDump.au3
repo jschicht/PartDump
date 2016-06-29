@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Dump disk partition info
 #AutoIt3Wrapper_Res_Description=Dump disk partition info
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.1
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.2
 #AutoIt3Wrapper_Res_LegalCopyright=Joakim Schicht
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -21,14 +21,14 @@ $VolumesArray[0][0] = "Type"
 $VolumesArray[0][1] = "SectorOffset"
 $VolumesArray[0][2] = "Sectors"
 
-ConsoleWrite("PartDump v1.0.0.1" & @CRLF & @CRLF)
+ConsoleWrite("PartDump v1.0.0.2" & @CRLF & @CRLF)
 
 _GetInputParams()
 ;_ArrayDisplay($VolumesArray,"$VolumesArray")
 
 If $WritePartInfo Then
 	$hFile = FileOpen($OutPutPath & "\DiskInfo.txt",2)
-	FileWriteLine($hFile,"No,Type,ByteOffset,Sectors")
+	FileWriteLine($hFile,"No,Type,SectorOffset,Sectors")
 EndIf
 
 $HighestVal0 = UBound($VolumesArray)

@@ -4,7 +4,9 @@ This is a console application that dump basic volume information from a disk obj
 Syntax
 PartDump.exe /ImageFilePath:FullPath\ImageFilename /OutputPath:FullPath /LocalDiskPath:FullDevicePath /WriteInfo:[0|1]
 
-Explanation of parameters
+
+Explanation of parameters:
+
 /ImageFilePath:
 The full path and filename of an image file to evaluate. Use this one or /LocalDiskPath.
 /LocalDiskPath:
@@ -17,7 +19,7 @@ An optional boolean flag for writing a file with some disk information into Disk
 The /WriteInfo: parameter can be useful when scripting.
 
 
-Sample usage
+Sample usage:
 
 Example for dumping to console only, the volume information from diskimage.dd..
 PartDump.exe /ImageFilePath:e:\temp\diskimage.dd
@@ -30,3 +32,11 @@ PartDump.exe /LocalDiskPath:\\.\PhysicalDrive0
 
 Example for dumping to console and to e:\temp\DiskInfo.txt, the volume information from \\.\PhysicalDrive1.
 PartDump.exe /LocalDiskPath:\\.\PhysicalDrive1 /WriteInfo:1
+
+
+Sample output file content:
+
+No,Type,SectorOffset,Sectors
+1,Non-NTFS,63,80262
+2,NTFS,81920,25628671
+3,NTFS,25710592,474404863

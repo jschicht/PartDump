@@ -1,4 +1,6 @@
 
+v1.0.0.2:
+Fixed incorrect column header name in output file from ByteOffset to SectorOffset.
 
 v1.0.0.1:
 Added a new column for the partition number.
